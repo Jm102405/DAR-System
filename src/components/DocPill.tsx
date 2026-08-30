@@ -1,4 +1,3 @@
-import React from 'react';
 import { TriState } from '../types';
 
 interface DocPillProps {

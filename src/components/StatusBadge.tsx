@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertTriangleIcon, CheckIcon, ClockIcon } from 'lucide-react';
 import { CaseEval, statusTokens } from '../utils';
 

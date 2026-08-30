@@ -1,4 +1,3 @@
-import React from 'react';
 import { initials, PartyStatus, statusTokens } from '../utils';
 
 interface AvatarProps {

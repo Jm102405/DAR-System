@@ -1,5 +1,3 @@
-import React from 'react';
-
 // ---- Shared form primitives for the intake flow ----
 
 export function FormCard({

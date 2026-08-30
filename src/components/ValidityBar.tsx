@@ -1,4 +1,3 @@
-import React from 'react';
 import { LandholdingRecord } from '../types';
 import { fmtDate, humanRemaining, landholdingProgress, validityFromExpiry } from '../utils';
 

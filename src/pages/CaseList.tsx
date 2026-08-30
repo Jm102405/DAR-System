@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon, ScaleIcon, SearchIcon } from 'lucide-react';
 import { Avatar } from '../components/Avatar';

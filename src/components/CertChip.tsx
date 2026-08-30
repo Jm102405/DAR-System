@@ -1,4 +1,3 @@
-import React from 'react';
 import { CheckIcon, ClockIcon, MinusIcon } from 'lucide-react';
 import { AssessorCert, JURISDICTION_LABELS } from '../types';
 import { validityFromExpiry } from '../utils';
