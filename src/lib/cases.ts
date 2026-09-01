@@ -137,3 +137,102 @@ export async function updateDeathCertType(
 
   if (error) throw error;
 }
+
+// Insert a full case (case + property + parties + documents + certs).
+// Returns the real database UUID of the new case.
+export async function insertCase(newCase: Case): Promise<string> {
+  // 1. Case row
+  const { data: caseRow, error: caseErr } = await supabase
+    .from("cases")
+    .insert({
+      control_number: newCase.controlNumber,
+      transaction_type: newCase.transactionType,
+      date_opened: newCase.dateOpened,
+    })
+    .select("id")
+    .single();
+
+  if (caseErr) throw caseErr;
+  const caseId = caseRow.id as string;
+
+  // 2. Property row
+  const p = newCase.property;
+  const { error: propErr } = await supabase.from("properties").insert({
+    case_id: caseId,
+    title_no: p.titleNo,
+    td_no: p.tdNo,
+    total_area: p.totalArea,
+    sold_area: p.soldArea,
+    lot_no: p.lotNo,
+    address: p.address,
+  });
+
+  if (propErr) throw propErr;
+
+  // 3. Party rows
+  const { data: partyRows, error: partyErr } = await supabase
+    .from("parties")
+    .insert(
+      newCase.parties.map((party) => ({
+        case_id: caseId,
+        role: party.role,
+        name: party.name,
+        civil_status: party.civilStatus,
+        municipality: party.address.municipality ?? null,
+        city: party.address.city ?? null,
+        province: party.address.province,
+        heir_generation: party.heirGeneration,
+        is_deceased: party.isDeceased,
+        death_cert_type: party.deathCertType,
+        landholding_request_date: party.landholding?.requestDate ?? null,
+        landholding_expiry_date: party.landholding?.expiryDate ?? null,
+        existing_landholding: party.landholding?.existingLandholding ?? null,
+        to_be_transferred: party.landholding?.toBeTransferred ?? null,
+      })),
+    )
+    .select("id, name");
+
+  if (partyErr) throw partyErr;
+
+  // Map each draft party to its new database id by name.
+  const idByName = new Map<string, string>();
+  (partyRows ?? []).forEach((row: any) => idByName.set(row.name, row.id));
+
+  // 4. Documents
+  const docs = newCase.parties.flatMap((party) => {
+    const dbId = idByName.get(party.name);
+    if (!dbId) return [];
+    return party.documents.map((d) => ({
+      party_id: dbId,
+      kind: d.kind,
+      status: d.status,
+    }));
+  });
+
+  if (docs.length) {
+    const { error } = await supabase.from("party_documents").insert(docs);
+    if (error) throw error;
+  }
+
+  // 5. Certificates
+  const certs = newCase.parties.flatMap((party) => {
+    const dbId = idByName.get(party.name);
+    if (!dbId) return [];
+    return party.certs.map((c) => ({
+      party_id: dbId,
+      level: c.level,
+      required: c.required,
+      status: c.status,
+      cert_no: c.certNo ?? null,
+      date_issued: c.dateIssued ?? null,
+      valid_until: c.validUntil ?? null,
+    }));
+  });
+
+  if (certs.length) {
+    const { error } = await supabase.from("party_certs").insert(certs);
+    if (error) throw error;
+  }
+
+  return caseId;
+}

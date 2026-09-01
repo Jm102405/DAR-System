@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import {
   fetchCases,
+  insertCase,
   updateCertStatus,
   updateDeathCertType,
   updateDocumentStatus,
@@ -26,7 +27,7 @@ interface StoreValue {
   error: string | null;
   reload: () => Promise<void>;
   getCase: (caseId: string) => Case | undefined;
-  addCase: (newCase: Case) => void;
+  addCase: (newCase: Case) => Promise<string>;
   cycleDocument: (caseId: string, partyId: string, kind: DocumentKind) => void;
   cycleCert: (
     caseId: string,
@@ -96,7 +97,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       error,
       reload: load,
       getCase: (caseId) => cases.find((c) => c.caseId === caseId),
-      addCase: (newCase) => setCases((prev) => [newCase, ...prev]),
+      addCase: async (newCase) => {
+        const realId = await insertCase(newCase);
+        await load();
+        return realId;
+      },
 
       cycleDocument: (caseId, partyId, kind) => {
         const current = findParty(caseId, partyId)?.documents.find(

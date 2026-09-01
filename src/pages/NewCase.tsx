@@ -132,6 +132,7 @@ export function NewCase() {
   const [existingLandholding, setExistingLandholding] = useState('');
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
 
   const expiryPreview = useMemo(() => {
     if (!requestDate) return null;
@@ -162,7 +163,7 @@ export function NewCase() {
     return next;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const found = validate();
     setErrors(found);
@@ -202,8 +203,16 @@ export function NewCase() {
       parties: [sellerParty, buyerParty]
     };
 
-    addCase(newCase);
-    navigate(`/case/${caseId}`);
+    setSaving(true);
+    try {
+      const realId = await addCase(newCase);
+      navigate(`/case/${realId}`);
+    } catch (err: any) {
+      console.error('Failed to save case:', err);
+      setErrors({ submit: err?.message ?? 'Failed to save. Please try again.' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -474,6 +483,12 @@ export function NewCase() {
             </FormCard>
           </div>
 
+          {errors.submit &&
+          <div className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+              {errors.submit}
+            </div>
+          }
+
           {/* Actions */}
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
             <button
@@ -485,9 +500,10 @@ export function NewCase() {
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-ink px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink-light active:bg-ink-dark">
+              disabled={saving}
+              className="rounded-xl bg-ink px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink-light active:bg-ink-dark disabled:opacity-50">
               
-              Create transaction
+              {saving ? 'Saving…' : 'Create transaction'}
             </button>
           </div>
         </div>
