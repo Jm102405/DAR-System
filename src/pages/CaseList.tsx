@@ -57,8 +57,8 @@ export function CaseList() {
   return (
     <PhoneFrame>
       {/* Legal workspace header */}
-      <header className="bg-ink px-5 pb-6 pt-6 text-white md:px-8 md:pb-7 md:pt-8 xl:px-10">
-        <div className="mx-auto flex max-w-[1240px] flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="bg-ink px-5 pb-4 pt-5 text-white md:px-8 md:pb-7 md:pt-8 xl:px-10">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-3.5 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/30 bg-gold/10 text-gold-soft">
               <ScaleIcon className="h-5 w-5" strokeWidth={2} />
@@ -72,8 +72,8 @@ export function CaseList() {
           </div>
 
           {/* Search + new transaction */}
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto lg:justify-end">
-            <div className="relative w-full sm:min-w-[260px] lg:max-w-[400px]">
+          <div className="flex w-full flex-row items-center gap-2 sm:gap-3 lg:w-auto lg:justify-end">
+            <div className="relative min-w-0 flex-1 sm:min-w-[260px] lg:max-w-[400px]">
               <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
               <input
                 value={query}
@@ -85,20 +85,21 @@ export function CaseList() {
             <button
               type="button"
               onClick={() => navigate('/case/new')}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3 text-sm font-semibold text-ink-dark transition-colors hover:bg-gold-soft">
+              title="New transaction"
+              aria-label="New transaction"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gold px-3 py-3 text-sm font-semibold text-ink-dark transition-colors hover:bg-gold-soft sm:px-4">
               
               <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
-              New transaction
+              <span className="hidden sm:inline">New transaction</span>
             </button>
             <button
               type="button"
               onClick={() => signOut()}
               title="Sign out"
               aria-label="Sign out"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold text-gold-soft transition-colors hover:bg-white/10">
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 px-3 py-3 text-sm font-semibold text-gold-soft transition-colors hover:bg-white/10">
               
               <LogOutIcon className="h-4 w-4" strokeWidth={2.5} />
-              <span className="sm:hidden">Sign out</span>
             </button>
           </div>
         </div>
