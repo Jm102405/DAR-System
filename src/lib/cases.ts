@@ -95,3 +95,45 @@ function mapParty(p: any, caseId: string): Party {
       : null,
   };
 }
+
+// ---- Writes ----
+
+export async function updateDocumentStatus(
+  partyId: string,
+  kind: string,
+  status: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("party_documents")
+    .update({ status })
+    .eq("party_id", partyId)
+    .eq("kind", kind);
+
+  if (error) throw error;
+}
+
+export async function updateCertStatus(
+  partyId: string,
+  level: string,
+  status: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("party_certs")
+    .update({ status })
+    .eq("party_id", partyId)
+    .eq("level", level);
+
+  if (error) throw error;
+}
+
+export async function updateDeathCertType(
+  partyId: string,
+  deathCertType: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("parties")
+    .update({ death_cert_type: deathCertType })
+    .eq("id", partyId);
+
+  if (error) throw error;
+}

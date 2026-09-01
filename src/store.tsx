@@ -5,7 +5,12 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { fetchCases } from "./lib/cases";
+import {
+  fetchCases,
+  updateCertStatus,
+  updateDeathCertType,
+  updateDocumentStatus,
+} from "./lib/cases";
 import {
   Case,
   DeathCertType,
@@ -80,6 +85,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       );
     };
 
+    const findParty = (caseId: string, partyId: string) =>
+      cases
+        .find((c) => c.caseId === caseId)
+        ?.parties.find((p) => p.id === partyId);
+
     return {
       cases,
       loading,
@@ -87,24 +97,55 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       reload: load,
       getCase: (caseId) => cases.find((c) => c.caseId === caseId),
       addCase: (newCase) => setCases((prev) => [newCase, ...prev]),
-      cycleDocument: (caseId, partyId, kind) =>
+
+      cycleDocument: (caseId, partyId, kind) => {
+        const current = findParty(caseId, partyId)?.documents.find(
+          (d) => d.kind === kind,
+        );
+        if (!current) return;
+        const next = NEXT[current.status];
+
         updateParty(caseId, partyId, (p) => ({
           ...p,
           documents: p.documents.map((d) =>
-            d.kind === kind ? { ...d, status: NEXT[d.status] } : d,
+            d.kind === kind ? { ...d, status: next } : d,
           ),
-        })),
-      cycleCert: (caseId, partyId, level) =>
+        }));
+
+        updateDocumentStatus(partyId, kind, next).catch((e) => {
+          console.error("Failed to save document status:", e);
+          load();
+        });
+      },
+
+      cycleCert: (caseId, partyId, level) => {
+        const current = findParty(caseId, partyId)?.certs.find(
+          (c) => c.level === level,
+        );
+        if (!current) return;
+        const next = NEXT[current.status];
+
         updateParty(caseId, partyId, (p) => ({
           ...p,
           certs: p.certs.map((cert) =>
-            cert.level === level
-              ? { ...cert, status: NEXT[cert.status] }
-              : cert,
+            cert.level === level ? { ...cert, status: next } : cert,
           ),
-        })),
-      setDeathCert: (caseId, partyId, cert) =>
-        updateParty(caseId, partyId, (p) => ({ ...p, deathCertType: cert })),
+        }));
+
+        updateCertStatus(partyId, level, next).catch((e) => {
+          console.error("Failed to save cert status:", e);
+          load();
+        });
+      },
+
+      setDeathCert: (caseId, partyId, cert) => {
+        updateParty(caseId, partyId, (p) => ({ ...p, deathCertType: cert }));
+
+        updateDeathCertType(partyId, cert).catch((e) => {
+          console.error("Failed to save death cert type:", e);
+          load();
+        });
+      },
     };
   }, [cases, loading, error]);
 
