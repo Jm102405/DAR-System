@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusIcon, ScaleIcon, SearchIcon } from 'lucide-react';
+import { LogOutIcon, PlusIcon, ScaleIcon, SearchIcon } from 'lucide-react';
 import { Avatar } from '../components/Avatar';
 import { StatusBadge } from '../components/StatusBadge';
 import { PhoneFrame } from '../components/PhoneFrame';
 import { useStore } from '../store';
+import { useAuth } from '../lib/auth';
 import { CaseEval, evaluateCase } from '../utils';
 import { Case } from '../types';
 
@@ -31,7 +32,8 @@ function matchesFilter(evalResult: CaseEval, filter: FilterKey): boolean {
 }
 
 export function CaseList() {
-  const { cases } = useStore();
+  const { cases, loading, error, reload } = useStore();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterKey>('all');
@@ -88,6 +90,16 @@ export function CaseList() {
               <PlusIcon className="h-4 w-4" strokeWidth={2.5} />
               New transaction
             </button>
+            <button
+              type="button"
+              onClick={() => signOut()}
+              title="Sign out"
+              aria-label="Sign out"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold text-gold-soft transition-colors hover:bg-white/10">
+              
+              <LogOutIcon className="h-4 w-4" strokeWidth={2.5} />
+              <span className="sm:hidden">Sign out</span>
+            </button>
           </div>
         </div>
       </header>
@@ -117,7 +129,23 @@ export function CaseList() {
 
       {/* List */}
       <div className="no-scrollbar flex-1 overflow-y-auto px-0 md:px-8 md:py-5 xl:px-10">
-        {rows.length === 0 ?
+        {loading ?
+        <div className="px-6 py-16 text-center text-sm text-gray-400">
+            Loading cases…
+          </div> :
+        error ?
+        <div className="px-6 py-16 text-center">
+            <p className="text-sm font-semibold text-red-700">Couldn't load cases</p>
+            <p className="mx-auto mt-1 max-w-sm text-xs text-gray-500">{error}</p>
+            <button
+            type="button"
+            onClick={() => reload()}
+            className="mt-4 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-light">
+              
+              Try again
+            </button>
+          </div> :
+        rows.length === 0 ?
         <div className="px-6 py-16 text-center text-sm text-gray-400">
             No cases match this view.
           </div> :
@@ -134,7 +162,8 @@ export function CaseList() {
 }
 
 function CaseRow({ c, e, onOpen }: {c: Case;e: CaseEval;onOpen: () => void;}) {
-  const seller = c.parties.find((p) => p.role === 'seller' && p.heirGeneration === 0)!;
+  const seller = c.parties.find((p) => p.role === 'seller' && p.heirGeneration === 0);
+  if (!seller) return null;
   return (
     <li className="md:rounded-2xl md:border md:border-ink/10 md:bg-white">
       <button
