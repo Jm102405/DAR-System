@@ -10,7 +10,7 @@ import {
   ToggleRow } from
 '../components/FormControls';
 import { useStore } from '../store';
-import { suggestControlNumber } from '../data';
+import { suggestControlNumber } from '../lib/controlNumber';
 import {
   AssessorCert,
   Case,

@@ -5,13 +5,6 @@ import { NewCase } from './pages/NewCase';
 import { CaseDetail } from './pages/CaseDetail';
 import { HeirTree } from './pages/HeirTree';
 import NewTransactionPage from './pages/NewTransactionPage';
-import { supabase } from './lib/supabase';
-
-// TEMP connection test — remove after verifying
-supabase.from('cases').select('*').then(({ data, error }) => {
-  if (error) console.error('SUPABASE ERROR:', error);
-  else console.log('SUPABASE OK — rows:', data);
-});
 
 export function App() {
   return (
